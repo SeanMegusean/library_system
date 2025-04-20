@@ -91,13 +91,27 @@ $result = $stmt->get_result();
                         <td><?php echo htmlspecialchars($book['category']); ?></td>
                         <td><?php echo $book['quantity']; ?></td>
                         <td>
-                            <!-- Borrow Button -->
-                            <?php if ($book['quantity'] > 0) : ?>
+                        <?php
+                            // Check if this student already borrowed this book and it's not returned
+                            $alreadyBorrowed = false;
+                            $checkBorrowed = $conn->prepare("SELECT * FROM borrowings WHERE student_number = ? AND book_id = ? AND status = 'Pending'");
+                            $checkBorrowed->bind_param("si", $_SESSION['student_number'], $book['id']);
+                            $checkBorrowed->execute();
+                            $borrowCheckResult = $checkBorrowed->get_result();
+                            if ($borrowCheckResult->num_rows > 0) {
+                                $alreadyBorrowed = true;
+                            }
+                            $checkBorrowed->close();
+                            ?>
+
+                            <?php if ($alreadyBorrowed): ?>
+                                <button class="borrow-btn" disabled>Already Borrowed</button>
+                            <?php elseif ($book['quantity'] > 0): ?>
                                 <form method="POST" action="borrow.php" onsubmit="return confirmBorrow()">
                                     <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
                                     <button type="submit" class="borrow-btn">Borrow</button>
                                 </form>
-                            <?php else : ?>
+                            <?php else: ?>
                                 <button class="borrow-btn" disabled>Out of Stock</button>
                             <?php endif; ?>
                         </td>

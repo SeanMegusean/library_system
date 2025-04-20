@@ -11,8 +11,8 @@ $student_number = $_SESSION['user_id'];
 $book_id = $_POST['book_id'];
 
 
-// Check if the student already borrowed this book and hasn't returned it
-$check = $conn->prepare("SELECT borrow_ref FROM borrowings WHERE student_number = ? AND book_id = ? AND return_date IS NULL");
+// Check if student already borrowed this book and hasn't returned it
+$check = $conn->prepare("SELECT borrow_ref FROM borrowings WHERE student_number = ? AND book_id = ? AND status = 'Pending'");
 $check->bind_param("ii", $student_number, $book_id);
 $check->execute();
 $check_result = $check->get_result();
