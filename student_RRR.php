@@ -63,10 +63,22 @@ $result = $conn->query($sql);
             $result = $conn->query($sql);
             while ($row = $result->fetch_assoc()) :
             $room_id = $row['room_id'];
+
+            $stmt = $conn->prepare("SELECT * FROM mr_reservations WHERE room_id = ? AND Status = 'Pending' LIMIT 1");
+            $stmt->bind_param("i", $room_id);
+            $stmt->execute();
+            $pendingResult = $stmt->get_result();
+            $isPending = $pendingResult->num_rows > 0;
             ?>
                 <tr>
                     <td><?php echo $room_id; ?></td>
-                    <td><a href="reserve_room.php?room_id=<?= $room_id ?>">Reserve</a></td>
+                    <td>
+                    <?php if ($isPending): ?>
+                        Pending
+                    <?php else: ?>
+                        <a href="reserve_room.php?room_id=<?= $room_id ?>">Reserve</a>
+                    <?php endif; ?>
+                    </td>
                 </tr>
             <?php endwhile; ?>
         </tbody>
