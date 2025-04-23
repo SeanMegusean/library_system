@@ -58,8 +58,17 @@ $result = $conn->query($sql);
             </tr>
         </thead>
         <tbody>
-            // | MeetR  | Action  | dito mo lagay ogos
-            // | roomid | Reserve | reserve->reserve room page
+            <?php
+            $sql = "SELECT room_id FROM meeting_rooms"; // Just get room IDs
+            $result = $conn->query($sql);
+            while ($row = $result->fetch_assoc()) :
+            $room_id = $row['room_id'];
+            ?>
+                <tr>
+                    <td><?php echo $room_id; ?></td>
+                    <td><a href="reserve_room.php?room_id=<?= $room_id ?>">Reserve</a></td>
+                </tr>
+            <?php endwhile; ?>
         </tbody>
     </table>
     <p><a href="student_dashboard.php">← Back to Dashboard</a></p>
