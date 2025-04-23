@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Reserve Meeting Room</title>
 </head>
 <body>
-    <h2>Reserve Meeting Room: <?= htmlspecialchars($room['room_name'] ?? 'Unknown') ?></h2>
+    <h2>Reserve Meeting Room: <?= htmlspecialchars($room['room_id'] ?? 'Unknown') ?></h2>
 
     <?php if ($error_message): ?>
         <p class="error"><?= htmlspecialchars($error_message) ?></p>
