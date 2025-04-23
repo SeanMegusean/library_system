@@ -24,6 +24,7 @@ $order_clause = "ORDER BY {$sort_by} {$sort_order}";
 // 3️⃣ Build the base SQL
 $sql = "
   SELECT 
+    b.campus,
     br.id   AS borrow_id,
     b.id    AS book_id,
     b.title,
@@ -119,6 +120,7 @@ $result = $stmt->get_result();
     <h2>Borrowed Books</h2>
     <table>
         <tr>
+            <th>Campmus</th>
             <th>Book Title</th>
             <th>Category</th>
             <th>
@@ -164,6 +166,7 @@ $result = $stmt->get_result();
         </tr>
         <?php while ($row = $result->fetch_assoc()) : ?>
         <tr>
+            <td><?php echo htmlspecialchars($row['campus']); ?></td>
             <td><?php echo htmlspecialchars($row['title']); ?></td>
             <td><?php echo htmlspecialchars($row['category']); ?></td>
             <td><?php echo htmlspecialchars($row['student_number']); ?></td>
