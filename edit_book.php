@@ -13,14 +13,15 @@ $stmt->execute();
 $book = $stmt->get_result()->fetch_assoc();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $campus = $_POST['campus'];
     $title = $_POST['title'];
     $author = $_POST['author'];
     $year = $_POST['year'];
     $quantity = $_POST['quantity'];
     $category = $_POST['category'];
 
-    $stmt = $conn->prepare("UPDATE books SET title = ?, author = ?, year = ?, quantity = ? WHERE id = ?");
-    $stmt->bind_param("ssiii", $title, $author, $year, $quantity, $id);
+    $stmt = $conn->prepare("UPDATE books SET campus = ?, title = ?, author = ?, year = ?, quantity = ? WHERE id = ?");
+    $stmt->bind_param("sssiii", $campus, $title, $author, $year, $quantity, $id);
     $stmt->execute();
 
     header("Location: admin_books.php");
