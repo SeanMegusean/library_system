@@ -97,6 +97,8 @@ $result = $stmt->get_result();
 <body>
     <h1>Welcome, Admin!</h1>
     <a class="button" href="admin_books.php">📚 Manage Books</a>
+    <a class="button" href="admin_manage_requests.php">Manage Room Requests</a>
+    <a class="button" href="mr_logs.php">Meeting Room Logs</a>
     <a class="button" href="logout.php">Logout</a>
 
     <form method="GET" action="admin_dashboard.php" style="margin-bottom:10px;">
