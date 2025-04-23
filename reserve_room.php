@@ -13,22 +13,22 @@ $error_message = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $room_id = $_POST['room_id'];
     $student_number = $_SESSION['student_number'];
-    $date = $_POST['date'];
+    $date_reserved = $_POST['date_reserved'];
     $start_time = $_POST['start_time'];
     $end_time = $_POST['end_time'];
     $reason = $_POST['reason'];
     $status = "Pending";
-    $request_date = date('Y-m-d H:i:s');
+    $date_of_reservation = date('Y-m-d H:i:s');
 
     $stmt = $conn->prepare("
-        SELECT * FROM mr_requests
-        WHERE room_id = ? AND date = ? AND (
+        SELECT * FROM mr_reservations
+        WHERE room_id = ? AND date_reserved = ? AND (
             (start_time < ? AND end_time > ?) OR
             (start_time < ? AND end_time > ?) OR
             (start_time >= ? AND end_time <= ?)
         ) AND status != 'Rejected'
     ");
-    $stmt->bind_param("ssssssss", $room_id, $date, $end_time, $end_time, $start_time, $start_time, $start_time, $end_time);
+    $stmt->bind_param("ssssssss", $room_id, $date_reserved, $end_time, $end_time, $start_time, $start_time, $start_time, $end_time);
     $stmt->execute();
     $conflict = $stmt->get_result();
 
@@ -36,10 +36,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_message = "This room is already reserved at the selected time.";
     } else {
         $stmt = $conn->prepare("
-            INSERT INTO mr_requests (room_id, student_number, date_requested, date, start_time, end_time, reason, status)
+            INSERT INTO mr_reservations (room_id, student_number, date_reserved, start_time, end_time, reason, date_of_reservation, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->bind_param("ssssssss", $room_id, $student_number, $request_date, $date, $start_time, $end_time, $reason, $status);
+        $stmt->bind_param("ssssssss", $room_id, $student_number, $date_reserved, $start_time, $end_time, $reason, $date_of_reservation, $status);
         if ($stmt->execute()) {
             header("Location: student_RRR.php?message=Request added successfully :D");
             exit();
@@ -66,7 +66,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="hidden" name="room_id" value="<?= htmlspecialchars($room_id) ?>">
 
         <label>Date:</label><br>
-        <input type="date" name="date" required>
+        <input type="date" name="date_reserved" required>
         <br><br>
         <label>Start Time:</label><br>
         <input type="time" name="start_time" required>
