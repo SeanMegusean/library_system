@@ -69,7 +69,7 @@ $result = $stmt->get_result();
             <input type="text" name="search" placeholder="Search by title or author" value="<?php echo $search; ?>">
             <button type="submit">Search</button>
         </form>
-
+        <p><a href="student_RRR.php">Reserve a Meeting Room?</a></p>
         <h2>Available Books</h2>
         <table>
             <thead>
