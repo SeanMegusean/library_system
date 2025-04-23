@@ -7,6 +7,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 include('db_connection.php');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $campus = $_POST['campus'];
     $title = $_POST['title'];
     $author = $_POST['author'];
     $year = $_POST['year'];
@@ -16,13 +17,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // 1) Prepare with 5 columns
     $stmt = $conn->prepare("
-    INSERT INTO books (title, author, year, quantity, category)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO books (campus, title, author, year, quantity, category)
+    VALUES (?, ?, ?, ?, ?, ?)
     ");
 
     // 2) Bind 5 variables: string, string, int, int, string
     $stmt->bind_param(
-    "ssiss",          // s: title, s: author, i: year, s: quantity, s: category
+    "sssiss",          // s: title, s: author, i: year, s: quantity, s: category
+    $campus,
     $title,
     $author,
     $year,
@@ -56,6 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <h2>Add a New Book</h2>
     <form method="POST">
+        <input type="text" name="campus" placeholder="School Campus" required><br><br>
         <input type="text" name="title" placeholder="Title" required><br><br>
         <input type="text" name="author" placeholder="Author" required><br><br>
         <input type="number" name="year" placeholder="Year" required><br><br>
