@@ -11,6 +11,12 @@
         <input type="password" name="password" placeholder="Password" required><br><br>
         <button type="submit">Login</button>
     </form>
+
     <?php if (isset($_GET['error'])) echo "<p style='color:red'>" . htmlspecialchars($_GET['error']) . "</p>"; ?>
+
+    <br>
+    <form action="register.php">
+        <button type="submit">Create an Account</button>
+    </form>
 </body>
 </html>
