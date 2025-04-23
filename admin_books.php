@@ -44,10 +44,11 @@ $result = $stmt->get_result();
     <a href="logout.php">Logout</a>
     <table border="1" cellpadding="10" cellspacing="0">
         <tr>
-            <th>Title</th><th>Author</th><th>Year</th><th>Quantity</th><th>Actions</th>
+            <th>Campus</th><th>Title</th><th>Author</th><th>Year</th><th>Quantity</th><th>Actions</th>
         </tr>
         <?php while ($row = $result->fetch_assoc()): ?>
         <tr>
+            <td><?= htmlspecialchars($row['campus']) ?></td>
             <td><?= htmlspecialchars($row['title']) ?></td>
             <td><?= htmlspecialchars($row['author']) ?></td>
             <td><?= htmlspecialchars($row['year']) ?></td>
