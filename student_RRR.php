@@ -1,7 +1,8 @@
 <?php
 session_start();
 include('db_connection.php');
-$sql = "SELECT * FROM meeting_rooms"; // Replace with your actual table name
+$user_id = $_SESSION['user_id'];
+$sql = "SELECT * FROM meeting_rooms";
 $result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
@@ -13,7 +14,7 @@ $result = $conn->query($sql);
 </head>
 <body>
     <H2>Available Meeting Room</H2>
-    <table>
+    <table border="1"> \\ this shi makes them border thicc
     <thead>
         <tr>
             <th>Meeting Room</th>
