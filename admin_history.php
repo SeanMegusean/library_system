@@ -13,7 +13,7 @@ $today = date('Y-m-d');
 $filterDate = $_GET['date'] ?? null;
 
 $query = "
-    SELECT b.title, b.category, u.student_number, br.borrow_ref, br.borrow_date, br.status
+    SELECT b.campus, b.title, b.category, u.student_number, br.borrow_ref, br.borrow_date, br.status
     FROM borrowings br
     JOIN books b ON br.book_id = b.id
     JOIN users u ON br.student_number = u.student_number
