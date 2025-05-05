@@ -61,155 +61,156 @@ $stmt->execute();
 $result = $stmt->get_result();
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Admin Dashboard</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #444;
-            text-align: left;
-        }
-        h1 {
-            margin-bottom: 10px;
-        }
-        a.button {
-            display: inline-block;
-            margin: 10px 0;
-            padding: 8px 12px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<style>
+    body {
+        background-color: #0d6efd; /* Bootstrap blue or your own shade */
+        color: white;
+    }
+</style>
+<body>
 
-    <!--Show succes message-->
-        <?php if (isset($_GET['message'])) : ?>
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h1 class="mb-4 text-primary">Welcome, Admin!</h1>
+
+            <!--Show succes message-->
+            <?php if (isset($_GET['message'])) : ?>
             <p style="color: green;"><?php echo $_GET['message']; ?></p>
         <?php endif; ?>
 
-<body>
-    <h1>Welcome, Admin!</h1>
-    <a class="button" href="admin_books.php">📚 Manage Books</a>
-    <a class="button" href="admin_manage_requests.php">Manage Room Requests</a>
-    <a class="button" href="mr_logs.php">Meeting Room Logs</a>
-    <a class="button" href="logout.php">Logout</a>
+            <!-- Navigation Buttons -->
+            <div class="mb-3 d-flex flex-wrap gap-2">
+                <a class="btn btn-primary" href="admin_books.php">📚 Manage Books</a>
+                <a class="btn btn-secondary" href="admin_manage_requests.php">Manage Room Requests</a>
+                <a class="btn btn-info" href="mr_logs.php">Meeting Room Logs</a>
+                <a class="btn btn-danger" href="logout.php">Logout</a>
+            </div>
 
-    <form method="GET" action="admin_dashboard.php" style="margin-bottom:10px;">
-        <input 
-            type="text" 
-            name="search" 
-            placeholder="Search title, student no., ref…" 
-            value="<?php echo htmlspecialchars($search); ?>"
-        >
-        <button type="submit">🔍 Search</button>
-        <!-- preserve your current sort in the form -->
-        <input type="hidden" name="sort_by"    value="<?php echo htmlspecialchars($sort_by); ?>">
-        <input type="hidden" name="sort_order" value="<?php echo htmlspecialchars($sort_order); ?>">
-    </form>
+            <!-- Search Form -->
+            <form method="GET" action="admin_dashboard.php" class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        class="form-control" 
+                        placeholder="Search title, student no., ref…" 
+                        value="<?php echo htmlspecialchars($search); ?>"
+                    >
+                </div>
+                <input type="hidden" name="sort_by" value="<?php echo htmlspecialchars($sort_by); ?>">
+                <input type="hidden" name="sort_order" value="<?php echo htmlspecialchars($sort_order); ?>">
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-outline-primary">🔍 Search</button>
+                </div>
+            </form>
 
-    <a class="button" href="admin_history.php">📅 Borrowing History</a>
+            <a class="btn btn-outline-dark mb-3" href="admin_history.php">📅 Borrowing History</a>
 
-    <h2>Borrowed Books</h2>
-    <table>
-        <tr>
-            <th>Campmus</th>
-            <th>Book Title</th>
-            <th>Category</th>
-            <th>
-                <a href="?<?php 
-                    // preserve search + toggle order
-                        echo "search=".urlencode($search)
-                            ."&sort_by=student_number"
-                            ."&sort_order=" . ($sort_by==='student_number' && $sort_order==='ASC' ? 'DESC' : 'ASC');
-                    ?>">
-                        Student Number
-                    <?php if($sort_by==='student_number'): ?>
-                    <?php echo $sort_order==='ASC' ? '↑' : '↓'; ?>
-                    <?php endif; ?>
-                </a>
-            </th>
-            <th>Reference Number</th>
-            <th>
-                <a href="?<?php 
-                    // preserve search + toggle order
-                        echo "search=".urlencode($search)
-                            ."&sort_by=borrow_date"
-                            ."&sort_order=" . ($sort_by==='borrow_date' && $sort_order==='ASC' ? 'DESC' : 'ASC');
-                 ?>">
-                        Date Borrowed
-                    <?php if($sort_by==='borrow_date'): ?>
-                    <?php echo $sort_order==='ASC' ? '↑' : '↓'; ?>
-                    <?php endif; ?>
-                </a>
-            </th>
-            <th>
-                <a href="?<?php     
-                    // preserve search + toggle order
-                        echo "search=".urlencode($search)
-                            ."&sort_by=status"
-                            ."&sort_order=" . ($sort_by==='status' && $sort_order==='ASC' ? 'DESC' : 'ASC');
-                 ?>">
-                        Status
-                    <?php if($sort_by==='status'): ?>
-                    <?php echo $sort_order==='ASC' ? '↑' : '↓'; ?>
-                    <?php endif; ?>
-                </a>
-            </th>
-        </tr>
-        <?php while ($row = $result->fetch_assoc()) : ?>
-        <tr>
-            <td><?php echo htmlspecialchars($row['campus']); ?></td>
-            <td><?php echo htmlspecialchars($row['title']); ?></td>
-            <td><?php echo htmlspecialchars($row['category']); ?></td>
-            <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-            <td><?php echo htmlspecialchars($row['borrow_ref']); ?></td>
-            <td>
-                <?php 
-                    $borrowDateObj = new DateTime($row['borrow_date']);
-                    $borrowDate = $borrowDateObj->format('Y-m-d');
-                    $todayDate = (new DateTime())->format('Y-m-d');
+            <!-- Table -->
+            <h2 class="mb-3">Borrowed Books</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Campus</th>
+                            <th>Book Title</th>
+                            <th>Category</th>
+                            <th>
+                                <a class="text-decoration-none text-dark" href="?<?php 
+                                    echo "search=".urlencode($search)
+                                        ."&sort_by=student_number"
+                                        ."&sort_order=" . ($sort_by==='student_number' && $sort_order==='ASC' ? 'DESC' : 'ASC');
+                                    ?>">
+                                    Student Number
+                                    <?php if($sort_by==='student_number'): ?>
+                                        <?php echo $sort_order==='ASC' ? '↑' : '↓'; ?>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                            <th>Reference Number</th>
+                            <th>
+                                <a class="text-decoration-none text-dark" href="?<?php 
+                                    echo "search=".urlencode($search)
+                                        ."&sort_by=borrow_date"
+                                        ."&sort_order=" . ($sort_by==='borrow_date' && $sort_order==='ASC' ? 'DESC' : 'ASC');
+                                ?>">
+                                    Date Borrowed
+                                    <?php if($sort_by==='borrow_date'): ?>
+                                        <?php echo $sort_order==='ASC' ? '↑' : '↓'; ?>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                            <th>
+                                <a class="text-decoration-none text-dark" href="?<?php 
+                                    echo "search=".urlencode($search)
+                                        ."&sort_by=status"
+                                        ."&sort_order=" . ($sort_by==='status' && $sort_order==='ASC' ? 'DESC' : 'ASC');
+                                ?>">
+                                    Status
+                                    <?php if($sort_by==='status'): ?>
+                                        <?php echo $sort_order==='ASC' ? '↑' : '↓'; ?>
+                                    <?php endif; ?>
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = $result->fetch_assoc()) : ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($row['campus']); ?></td>
+                            <td><?php echo htmlspecialchars($row['title']); ?></td>
+                            <td><?php echo htmlspecialchars($row['category']); ?></td>
+                            <td><?php echo htmlspecialchars($row['student_number']); ?></td>
+                            <td><?php echo htmlspecialchars($row['borrow_ref']); ?></td>
+                            <td>
+                                <?php 
+                                    $borrowDateObj = new DateTime($row['borrow_date']);
+                                    $borrowDate = $borrowDateObj->format('Y-m-d');
+                                    $todayDate = (new DateTime())->format('Y-m-d');
+                                    $interval = (strtotime($todayDate) - strtotime($borrowDate)) / (60 * 60 * 24);
+                                    $status = $row['status'];
+                                    echo $borrowDate;
 
-                    $interval = (strtotime($todayDate) - strtotime($borrowDate)) / (60 * 60 * 24);
-                    $status = $row['status']; // 'Pending' or 'Returned'
+                                    if ($interval == 0) {
+                                        echo " <span class='badge bg-success'>Today</span>";
+                                    } elseif ($interval == 1) {
+                                        echo $status === 'Pending' 
+                                            ? " <span class='badge bg-warning text-dark'>Yesterday</span>"
+                                            : " <span class='badge bg-success'>Returned Yesterday</span>";
+                                    } else {
+                                        echo $status === 'Pending'
+                                            ? " <span class='badge bg-danger'>{$interval} days ago</span>"
+                                            : " <span class='badge bg-success'>Returned {$interval} days ago</span>";
+                                    }
+                                ?>
+                            </td>
+                            <td>
+                                <?php echo htmlspecialchars($row['status']); ?>
+                                <?php if ($row['status'] === 'Pending') : ?>
+                                    <form method="post" action="mark_returned.php" class="d-inline">
+                                        <input type="hidden" name="borrow_id" value="<?php echo $row['borrow_id']; ?>">
+                                        <input type="hidden" name="book_id" value="<?php echo $row['book_id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Mark as Returned</button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-                    echo $borrowDate;
-
-                    if ($interval == 0) {
-                        echo " <span style='color:green;'>(Today)</span>";
-                    } elseif ($interval == 1) {
-                        if ($status === 'Pending') {
-                            echo " <span style='color:orange;'>(Yesterday)</span>";
-                        } else {
-                            echo " <span style='color:green;'>(Returned Yesterday)</span>";
-                        }
-                    } else {
-                        if ($status === 'Pending') {
-                            echo " <span style='color:red;'>($interval days ago)</span>";
-                        } else {
-                            echo " <span style='color:green;'>(Returned $interval days ago)</span>";
-                        }
-                    }
-                ?>
-            </td>
-            <td><?php echo htmlspecialchars($row['status']); ?>
-            <?php if ($row['status'] === 'Pending') : ?>
-                <form method="post" action="mark_returned.php" style="display:inline;">
-                    <input type="hidden" name="borrow_id" value="<?php echo $row['borrow_id']; ?>">
-                    <input type="hidden" name="book_id" value="<?php echo $row['book_id']; ?>">
-                    <button type="submit">Mark as Returned</button>
-                </form>
-            <?php endif; ?>
-            </td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

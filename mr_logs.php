@@ -24,55 +24,41 @@ $result = $conn->query($sql);
 <html>
 <head>
     <title>Meeting Room Logs</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #444;
-            text-align: left;
-        }
-        .button {
-            display: inline-block;
-            margin: 10px 5px;
-            padding: 8px 12px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
 </head>
-<body>
-    <h1>🗂️ Meeting Room Logs</h1>
-    <a class="button" href="admin_dashboard.php">← Back to Dashboard</a>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">🗂️ Meeting Room Logs</h1>
+            <a href="admin_dashboard.php" class="btn btn-success">← Back to Dashboard</a>
+        </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Log ID</th>
-                <th>Request ID</th>
-                <th>Room ID</th>
-                <th>Action</th>
-                <th>Admin</th>
-                <th>Timestamp</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php while ($log = $result->fetch_assoc()) : ?>
-                <tr>
-                    <td><?= $log['log_id'] ?></td>
-                    <td><?= $log['req_id'] ?></td>
-                    <td><?= $log['room_id'] ?></td>
-                    <td><?= $log['action'] ?></td>
-                    <td><?= $log['admin_number'] ?></td>
-                    <td><?= $log['timestamp'] ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+        <div class="table-responsive shadow-sm rounded bg-white p-3">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Log ID</th>
+                        <th scope="col">Request ID</th>
+                        <th scope="col">Room ID</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Admin</th>
+                        <th scope="col">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($log = $result->fetch_assoc()) : ?>
+                        <tr>
+                            <td><?= $log['log_id'] ?></td>
+                            <td><?= $log['req_id'] ?></td>
+                            <td><?= $log['room_id'] ?></td>
+                            <td><?= $log['action'] ?></td>
+                            <td><?= $log['admin_number'] ?></td>
+                            <td><?= $log['timestamp'] ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 </html>

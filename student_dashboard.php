@@ -50,12 +50,18 @@ $result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+<style>
+body {
+    background: linear-gradient(90deg, #5A9FFF 0%, #407BFF 100%);;
+}
+</style>
 <body>
-    <div class="container">
-        <h1>Welcome, <?php echo $_SESSION['student_number']; ?>!</h1>
-        <p><a href="logout.php">Logout</a></p>
+    <div class="container p-4 rounded shadow-lg" style="background: linear-gradient(90deg, #FFFFFF 0%, #E4E1E1 100%); box-shadow: inset 1px 1px 2px 0 rgba(0, 0, 0, 0.2), inset -1px -1px 2px 0 rgba(255, 255, 255, 0.8);">
+        <h1 class="text-center font-weight-bold text-primary">Welcome, <?php echo $_SESSION['student_number']; ?>!</h1>
+        <p class="text-end"><a href="logout.php" class="btn btn-outline-danger border-2" style=" font-weight: 600;">Log Out</a></p>
 
         <?php if (isset($_GET['message'])) : ?>
             <div class="message success"><?php echo $_GET['message']; ?></div>
@@ -66,13 +72,19 @@ $result = $stmt->get_result();
         <?php endif; ?>
 
         <form method="POST" action="student_dashboard.php">
-            <input type="text" name="search" placeholder="Search by title or author" value="<?php echo $search; ?>">
-            <button type="submit">Search</button>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <input class="form-control rounded-start" type="text" name="search" placeholder="Search by title or author" value="<?php echo $search; ?>">
+                        <button class="btn btn-outline-primary rounded-end border-2" style="font-weight: 600;" type="submit">🔍 Search</button>
+                    </div>
+                </div>
+            </div>
         </form>
-        <p><a href="student_RRR.php">Request/Reserve a Meeting Room?</a></p>
+        <p><a href="student_RRR.php" class="btn btn-outline-primary border-2" style="font-weight: 600;">Request/Reserve a Meeting Room?</a></p>
         <h2>Available Books</h2>
-        <table>
-            <thead>
+        <table class="table table-striped table-bordered table-hover">
+            <thead class="text-primary text-center">
                 <tr>
                     <th>Campus</th>
                     <th>Title</th>
@@ -92,7 +104,7 @@ $result = $stmt->get_result();
                         <td><?php echo $book['year']; ?></td>
                         <td><?php echo htmlspecialchars($book['category']); ?></td>
                         <td><?php echo $book['quantity']; ?></td>
-                        <td>
+                        <td class="text center">
                         <?php
                             // Check if this student already borrowed this book and it's not returned
                             $alreadyBorrowed = false;
@@ -107,14 +119,14 @@ $result = $stmt->get_result();
                             ?>
 
                             <?php if ($alreadyBorrowed): ?>
-                                <button class="borrow-btn" disabled>Already Borrowed</button>
+                                <button class="borrow-btn btn btn-warning" disabled>Already Borrowed</button>
                             <?php elseif ($book['quantity'] > 0): ?>
                                 <form method="POST" action="borrow.php" onsubmit="return confirmBorrow()">
                                     <input type="hidden" name="book_id" value="<?php echo $book['id']; ?>">
-                                    <button type="submit" class="borrow-btn">Borrow</button>
+                                    <button type="submit" class="borrow-btn btn btn-outline-success border-2" style="font-weight: 600;">Borrow</button>
                                 </form>
                             <?php else: ?>
-                                <button class="borrow-btn" disabled>Out of Stock</button>
+                                <button class="borrow-btn btn btn-secondary" disabled>Out of Stock</button>
                             <?php endif; ?>
                         </td>
                         <script>
@@ -128,8 +140,9 @@ $result = $stmt->get_result();
         </table>
     </div>
     <?php if (!empty($recommendations)): ?>
-        <h3>📚 Recommended for you:</h3>
-        <ul>
+    <div class="container mt-4 p-4 rounded shadow-lg" style="background: linear-gradient(90deg, #FFFFFF 0%, #E4E1E1 100%); box-shadow: inset 1px 1px 2px 0 rgba(0, 0, 0, 0.2), inset -1px -1px 2px 0 rgba(255, 255, 255, 0.8);">
+        <h3 class="text-primary">📚 Recommended for you:</h3>
+        <ul class="list-group">
         <?php foreach ($recommendations as $rec): ?>
             <?php
                 // Check quantity of this recommended book
@@ -141,26 +154,31 @@ $result = $stmt->get_result();
                 $quantity = $qtyResult['quantity'] ?? 0;
                 $qtyStmt->close();
             ?>
-            <li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
                 <?php echo htmlspecialchars($rec['title']); ?>
                 &mdash;
                 <?php if ($quantity > 0): ?>
                     <form method="POST" action="borrow.php" style="display:inline;" onsubmit="return confirm('Are you sure you want to borrow this book?');">
                         <input type="hidden" name="book_id" value="<?php echo $bookId; ?>">
-                        <button type="submit" class="borrow-btn-link">Borrow this</button>
+                        <button type="submit" class="borrow-btn-link btn btn-outline-primary btn-sm">Borrow this</button>
                     </form>
                 <?php else: ?>
                     <span style="color: red;">Out of stock</span>
                 <?php endif; ?>
-            </li>
+            </li> 
         <?php endforeach; ?>
 
         </ul>
+    </div>
+        
     <?php elseif ($last): ?>
-        <p>No recommendations yet—try borrowing more books in different categories!</p>
+    <div class="container mt-4" >
+        <p class="text-center text-muted">No recommendations yet—try borrowing more books in different categories!</p>
+    </div>
+        
     <?php endif; ?>
     
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 

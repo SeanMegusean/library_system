@@ -7,9 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 include('db_connection.php');
 
 $today = date('Y-m-d');
-
-
-// Optional: Filter by date
 $filterDate = $_GET['date'] ?? null;
 
 $query = "
@@ -30,78 +27,103 @@ if ($filterDate) {
 
 $stmt->execute();
 $result = $stmt->get_result();
+
+// Count today's borrowings
+$count_stmt = $conn->prepare("
+    SELECT 
+        SUM(status = 'Pending') AS pending_count,
+        SUM(status = 'Returned') AS returned_count
+    FROM borrowings
+    WHERE DATE(borrow_date) = ?
+");
+$count_stmt->bind_param("s", $today);
+$count_stmt->execute();
+$count_result = $count_stmt->get_result()->fetch_assoc();
+
+$pending_count = $count_result['pending_count'] ?? 0;
+$returned_count = $count_result['returned_count'] ?? 0;
+$total_count = $pending_count + $returned_count;
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <title>Borrowing History</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #444; text-align: left; }
-        h1 { margin-bottom: 10px; }
-        form { margin-bottom: 10px; }
+        body {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        .form-label {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>📅 Borrowing History</h1>
-    <form method="get">
-        <label for="date">Filter by Date:</label>
-        <input type="date" id="date" name="date" value="<?php echo htmlspecialchars($filterDate); ?>">
-        <button type="submit">Filter</button>
-        <a href="admin_history.php">Clear</a>
-    </form>
+<div class="container py-5">
+    <h1 class="mb-4 bg-primary text-white p-3 rounded">📅 Borrowing History</h1>
 
-    <form method="post" action="export_csv.php" target="_blank">
-    <input type="date" name="export_date" value="<?php echo htmlspecialchars($filterDate ?? date('Y-m-d')); ?>">
-    <button type="submit" name="export_csv">📁 Export CSV</button>
-    </form>
+    <div class="bg-white p-4 rounded shadow text-dark">
 
+        <!-- Filter Form -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <form method="get" class="d-flex align-items-center gap-2">
+                    <label for="date" class="form-label mb-0">Filter by Date:</label>
+                    <input type="date" id="date" name="date" class="form-control" value="<?= htmlspecialchars($filterDate); ?>">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="admin_history.php" class="btn btn-outline-secondary">Clear</a>
+                </form>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <form method="post" action="export_csv.php" target="_blank" class="d-inline-block">
+                    <input type="date" name="export_date" class="form-control d-inline-block w-auto" value="<?= htmlspecialchars($filterDate ?? $today); ?>">
+                    <button type="submit" name="export_csv" class="btn btn-success">📁 Export CSV</button>
+                </form>
+            </div>
+        </div>
 
+        <!-- Summary -->
+        <p><strong>📊 Today's Borrowing Summary:</strong> <?= $total_count ?> borrowed — <?= $pending_count ?> pending, <?= $returned_count ?> returned</p>
 
-    <?php
-        // Get today's date
-        $today = date('Y-m-d');
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Book Title</th>
+                        <th>Campus</th>
+                        <th>Category</th>
+                        <th>Student Number</th>
+                        <th>Reference Number</th>
+                        <th>Date Borrowed</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = $result->fetch_assoc()) : ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['title']) ?></td>
+                        <td><?= htmlspecialchars($row['campus']) ?></td>
+                        <td><?= htmlspecialchars($row['category']) ?></td>
+                        <td><?= htmlspecialchars($row['student_number']) ?></td>
+                        <td><?= htmlspecialchars($row['borrow_ref']) ?></td>
+                        <td><?= htmlspecialchars($row['borrow_date']) ?></td>
+                        <td><?= htmlspecialchars($row['status']) ?></td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
 
-        // Count today's borrowings
-        $count_stmt = $conn->prepare("
-            SELECT 
-                SUM(status = 'Pending') AS pending_count,
-                SUM(status = 'Returned') AS returned_count
-            FROM borrowings
-            WHERE DATE(borrow_date) = ?
-        ");
-        $count_stmt->bind_param("s", $today);
-        $count_stmt->execute();
-        $count_result = $count_stmt->get_result()->fetch_assoc();
+        <a href="admin_dashboard.php" class="btn btn-outline-primary mt-3">← Back to Dashboard</a>
+    </div>
+</div>
 
-        $pending_count = $count_result['pending_count'] ?? 0;
-        $returned_count = $count_result['returned_count'] ?? 0;
-        $total_count = $pending_count + $returned_count;
-        ?>
-        <p><strong>📊 Today's Borrowing Summary:</strong> <?= $total_count ?> borrowed —
-            <?= $pending_count ?> pending, <?= $returned_count ?> returned</p>
-
-    <table>
-        <tr>
-            <th>Book Title</th>
-            <th>Category</th>
-            <th>Student Number</th>
-            <th>Reference Number</th>
-            <th>Date Borrowed</th>
-            <th>Status</th>
-        </tr>
-        <?php while ($row = $result->fetch_assoc()) : ?>
-        <tr>
-            <td><?php echo htmlspecialchars($row['title']); ?></td>
-            <td><?php echo htmlspecialchars($row['category']); ?></td>
-            <td><?php echo htmlspecialchars($row['student_number']); ?></td>
-            <td><?php echo htmlspecialchars($row['borrow_ref']); ?></td>
-            <td><?php echo htmlspecialchars($row['borrow_date']); ?></td>
-            <td><?php echo htmlspecialchars($row['status']); ?></td>
-        </tr>
-        <?php endwhile; ?>
-    </table>
-
-    <p><a href="admin_dashboard.php">← Back to Dashboard</a></p>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
