@@ -6,6 +6,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 include('db_connection.php');
 
+$admin_id = $_SESSION['user_id'];
+
+$admin_query = $conn->prepare("SELECT full_name FROM users WHERE id = ? AND role = 'admin'");
+$admin_query->bind_param("i", $admin_id);
+$admin_query->execute();
+$admin_result = $admin_query->get_result();
+$admin_name = 'Admin'; // fallback name
+
+if ($admin_row = $admin_result->fetch_assoc()) {
+    $admin_name = $admin_row['full_name'];
+}
+
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // 2️⃣ Sorting
@@ -78,7 +90,7 @@ $result = $stmt->get_result();
 <div class="container my-5">
     <div class="card shadow-sm">
         <div class="card-body">
-            <h1 class="mb-4 text-primary">Welcome, Admin!</h1>
+            <h1 class="mb-4 text-primary">Welcome, Admin <?php echo htmlspecialchars($admin_name); ?>!</h1>
 
             <!--Show succes message-->
             <?php if (isset($_GET['message'])) : ?>

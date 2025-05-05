@@ -9,6 +9,17 @@ if (!isset($_SESSION['student_number'])) {
     exit;
 }
 
+$student_number = $_SESSION['student_number'];
+
+// Fetch full name from database
+$fullNameStmt = $conn->prepare("SELECT full_name FROM users WHERE student_number = ?");
+$fullNameStmt->bind_param("s", $student_number);
+$fullNameStmt->execute();
+$fullNameResult = $fullNameStmt->get_result();
+$student = $fullNameResult->fetch_assoc();
+$full_name = $student['full_name'] ?? $student_number; // Fallback to student_number
+$fullNameStmt->close();
+
 // 1️⃣ Get the last borrowed book for this student
 $stmt = $conn->prepare("
   SELECT book_id
@@ -60,7 +71,7 @@ body {
 </style>
 <body>
     <div class="container p-4 rounded shadow-lg" style="background: linear-gradient(90deg, #FFFFFF 0%, #E4E1E1 100%); box-shadow: inset 1px 1px 2px 0 rgba(0, 0, 0, 0.2), inset -1px -1px 2px 0 rgba(255, 255, 255, 0.8);">
-        <h1 class="text-center font-weight-bold text-primary">Welcome, <?php echo $_SESSION['student_number']; ?>!</h1>
+    <h1 class="text-center font-weight-bold text-primary">Welcome, <?php echo htmlspecialchars($full_name); ?>!</h1>
         <p class="text-end"><a href="logout.php" class="btn btn-outline-danger border-2" style=" font-weight: 600;">Log Out</a></p>
 
         <?php if (isset($_GET['message'])) : ?>
