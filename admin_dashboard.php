@@ -100,7 +100,9 @@ $result = $stmt->get_result();
             <!-- Navigation Buttons -->
             <div class="mb-3 d-flex flex-wrap gap-2">
                 <a class="btn btn-primary" href="admin_books.php">📚 Manage Books</a>
+                <a class="btn btn-info" href="admin_mr_status.php">Meeting Room Status</a>
                 <a class="btn btn-secondary" href="admin_manage_requests.php">Manage Room Requests</a>
+                <a class="btn btn-secondary" href="admin_manage_reservations.php">Manage Room Reservations</a>
                 <a class="btn btn-info" href="mr_logs.php">Meeting Room Logs</a>
                 <a class="btn btn-danger" href="logout.php">Logout</a>
             </div>

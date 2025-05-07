@@ -17,7 +17,18 @@ $sql = "
     ORDER BY rl.timestamp DESC
 ";
 
-$result = $conn->query($sql);
+$reqresult = $conn->query($sql);
+
+$sql = "
+    SELECT rl.*, u.student_number AS admin_number, r.room_id
+    FROM reserve_logs rl
+    JOIN mr_reservations mr ON rl.res_id = mr.res_id
+    JOIN users u ON rl.admin_id = u.id
+    JOIN meeting_rooms r ON mr.room_id = r.room_id
+    ORDER BY rl.timestamp DESC
+";
+
+$resresult = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +48,7 @@ $result = $conn->query($sql);
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">Log ID</th>
+                        <th scope="col">Req. Log ID</th>
                         <th scope="col">Request ID</th>
                         <th scope="col">Room ID</th>
                         <th scope="col">Action</th>
@@ -46,14 +57,38 @@ $result = $conn->query($sql);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($log = $result->fetch_assoc()) : ?>
+                    <?php while ($rqlog = $reqresult->fetch_assoc()) : ?>
                         <tr>
-                            <td><?= $log['log_id'] ?></td>
-                            <td><?= $log['req_id'] ?></td>
-                            <td><?= $log['room_id'] ?></td>
-                            <td><?= $log['action'] ?></td>
-                            <td><?= $log['admin_number'] ?></td>
-                            <td><?= $log['timestamp'] ?></td>
+                            <td><?= $rqlog['log_id'] ?></td>
+                            <td><?= $rqlog['req_id'] ?></td>
+                            <td><?= $rqlog['room_id'] ?></td>
+                            <td><?= $rqlog['action'] ?></td>
+                            <td><?= $rqlog['admin_number'] ?></td>
+                            <td><?= $rqlog['timestamp'] ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Res. Log ID</th>
+                        <th scope="col">Reservation ID</th>
+                        <th scope="col">Room ID</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Admin</th>
+                        <th scope="col">Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($rslog = $resresult->fetch_assoc()) : ?>
+                        <tr>
+                            <td><?= $rslog['log_id'] ?></td>
+                            <td><?= $rslog['res_id'] ?></td>
+                            <td><?= $rslog['room_id'] ?></td>
+                            <td><?= $rslog['action'] ?></td>
+                            <td><?= $rslog['admin_number'] ?></td>
+                            <td><?= $rslog['timestamp'] ?></td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

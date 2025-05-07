@@ -1,7 +1,13 @@
 <?php
 session_start();
 include('db_connection.php');
-$user_id = $_SESSION['user_id'];
+// Check if student is logged in
+if (!isset($_SESSION['student_number'])) {
+    header("Location: login.php?error=Please log in first");
+    exit;
+}
+
+$student_number = $_SESSION['student_number'];
 $sql = "SELECT * FROM meeting_rooms";
 $result = $conn->query($sql);
 ?>
@@ -32,29 +38,33 @@ $result = $conn->query($sql);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = $result->fetch_assoc()) : 
-                            $room_id = $row['room_id'];
-                            // Check if a pending request exists for this room
-                            $stmt = $conn->prepare("SELECT * FROM mr_requests WHERE room_id = ? AND Status = 'Pending' LIMIT 1");
-                            $stmt->bind_param("i", $room_id);
-                            $stmt->execute();
-                            $pendingResult = $stmt->get_result();
-                            $isPending = $pendingResult->num_rows > 0;
-                        ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($room_id); ?></td>
-                                <td><?php echo htmlspecialchars($row['Status']); ?></td>
-                                <td>
-                                    <?php if (($row['Status']) === 'In Session'): ?>
-                                        <span class="text-warning">Please wait</span>
-                                    <?php elseif ($isPending): ?>
-                                        <span class="text-secondary">Pending</span>
-                                    <?php else: ?>
-                                        <a href="request_room.php?room_id=<?= $room_id ?>" class="btn btn-info btn-sm">Request</a>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
+                    <?php while ($row = $result->fetch_assoc()) : 
+    $room_id = $row['room_id'];
+
+    // Check if a pending request exists for this room by the logged-in user
+    $stmt = $conn->prepare("SELECT * FROM mr_requests WHERE room_id = ? AND student_number = ? AND Status = 'Pending' LIMIT 1");
+    $stmt->bind_param("ii", $room_id, $student_number);
+    $stmt->execute();
+    $pendingResult = $stmt->get_result();
+    $isPending = $pendingResult->num_rows > 0;
+?>
+    <tr>
+        <td><?php echo htmlspecialchars($room_id); ?></td>
+        <td><?php echo htmlspecialchars($row['Status']); ?></td>
+        <td>
+            <?php if ($row['Status'] === 'In Session'): ?>
+                <span class="text-warning">Please wait</span>
+            <?php elseif ($row['Status'] === 'Unavailable'): ?>
+                <!-- this is literally me fr fr-->
+            <?php elseif ($isPending): ?>
+                <span class="text-secondary">Pending</span>
+            <?php else: ?>
+                <a href="request_room.php?room_id=<?= $room_id ?>" class="btn btn-info btn-sm">Request</a>
+            <?php endif; ?>
+        </td>
+    </tr>
+<?php endwhile; ?>
+
                     </tbody>
                 </table>
             </div>
@@ -75,29 +85,38 @@ $result = $conn->query($sql);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php
-                        $sql = "SELECT room_id FROM meeting_rooms"; // Just get room IDs
-                        $result = $conn->query($sql);
-                        while ($row = $result->fetch_assoc()) :
-                        $room_id = $row['room_id'];
+                    <?php
+$sql = "SELECT room_id FROM meeting_rooms"; // Just get room IDs
+$result = $conn->query($sql);
+$stmt = $conn->prepare("SELECT Status FROM mr_reservations WHERE room_id = ? AND student_number = ? LIMIT 1");
 
-                        $stmt = $conn->prepare("SELECT * FROM mr_reservations WHERE room_id = ? AND Status = 'Pending' LIMIT 1");
-                        $stmt->bind_param("i", $room_id);
-                        $stmt->execute();
-                        $pendingResult = $stmt->get_result();
-                        $isPending = $pendingResult->num_rows > 0;
-                        ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($room_id); ?></td>
-                                <td>
-                                    <?php if ($isPending): ?>
-                                        <span class="text-secondary">Pending</span>
-                                    <?php else: ?>
-                                        <a href="reserve_room.php?room_id=<?= $room_id ?>" class="btn btn-success btn-sm">Reserve</a>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
+while ($row = $result->fetch_assoc()) :
+    $room_id = $row['room_id'];
+
+    // Check reservation status for the student
+    $stmt->bind_param("ii", $room_id, $student_number);
+    $stmt->execute();
+    $reservationResult = $stmt->get_result();
+
+    $status = null;
+    if ($res = $reservationResult->fetch_assoc()) {
+        $status = $res['Status'];
+    }
+?>
+    <tr>
+        <td><?php echo htmlspecialchars($room_id); ?></td>
+        <td>
+            <?php if ($status === 'Pending'): ?>
+                <span class="text-secondary">Pending</span>
+            <?php elseif ($status === 'Approved'): ?>
+                <a href="reserv_aprob.php?room_id=<?= $room_id ?>" class="text-success text-decoration-none">Reservation Approved :D</a>
+            <?php else: ?>
+                <a href="reserve_room.php?room_id=<?= $room_id ?>" class="btn btn-success btn-sm">Reserve</a>
+            <?php endif; ?>
+        </td>
+    </tr>
+<?php endwhile; ?>
+
                     </tbody>
                 </table>
             </div>
