@@ -56,7 +56,7 @@ $result = $conn->query($sql);
                 <span class="text-warning">Please wait</span>
             <?php elseif ($row['Status'] === 'Unavailable'): ?>
                 <!-- this is literally me fr fr-->
-            <?php elseif ($isPending): ?>
+           <?php elseif ($row['Status'] === 'In Session'): ?>
                 <span class="text-secondary">Pending</span>
             <?php else: ?>
                 <a href="request_room.php?room_id=<?= $room_id ?>" class="btn btn-info btn-sm">Request</a>
