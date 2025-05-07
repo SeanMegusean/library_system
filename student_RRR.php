@@ -55,7 +55,7 @@ $result = $conn->query($sql);
             <?php if ($row['Status'] === 'In Session'): ?>
                 <span class="text-warning">Please wait</span>
             <?php elseif ($row['Status'] === 'Unavailable'): ?>
-                <!-- this is literally me fr fr-->
+                <!-- this is literally me fr fr fr-->
            <?php elseif ($row['Status'] === 'In Session'): ?>
                 <span class="text-secondary">Pending</span>
             <?php else: ?>
