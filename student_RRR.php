@@ -43,7 +43,7 @@ $result = $conn->query($sql);
 
     // Check if a pending request exists for this room by the logged-in user
     $stmt = $conn->prepare("SELECT * FROM mr_requests WHERE room_id = ? AND student_number = ? AND Status = 'Pending' LIMIT 1");
-    $stmt->bind_param("ii", $room_id, $student_number);
+    $stmt->bind_param("is", $room_id, $student_number);
     $stmt->execute();
     $pendingResult = $stmt->get_result();
     $isPending = $pendingResult->num_rows > 0;
@@ -94,7 +94,7 @@ while ($row = $result->fetch_assoc()) :
     $room_id = $row['room_id'];
 
     // Check reservation status for the student
-    $stmt->bind_param("ii", $room_id, $student_number);
+    $stmt->bind_param("is", $room_id, $student_number);
     $stmt->execute();
     $reservationResult = $stmt->get_result();
 
