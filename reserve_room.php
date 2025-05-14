@@ -51,35 +51,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Reserve Meeting Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h2>Reserve Meeting Room: <?= htmlspecialchars($room['room_id'] ?? 'Unknown') ?></h2>
+    <div class="container mt-5 p-4 rounded shadow" style="background: #f8f9fa;">
+        <h2 class="text-center text-primary mb-4">Reserve Meeting Room: <?= htmlspecialchars($room['room_id'] ?? 'Unknown') ?></h2>
 
-    <?php if ($error_message): ?>
-        <p class="error"><?= htmlspecialchars($error_message) ?></p>
-    <?php endif; ?>
+        <?php if ($error_message): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($error_message) ?></div>
+        <?php endif; ?>
 
-    <form method="POST">
-        <input type="hidden" name="room_id" value="<?= htmlspecialchars($room_id) ?>">
+        <form method="POST">
+            <input type="hidden" name="room_id" value="<?= htmlspecialchars($room_id) ?>">
 
-        <label>Date:</label><br>
-        <input type="date" name="date_reserved" required>
-        <br><br>
-        <label>Start Time:</label><br>
-        <input type="time" name="start_time" required>
-        <br><br>
-        <label>End Time:</label><br>
-        <input type="time" name="end_time" required>
-        <br><br>
-        <label>Reason for Reserve:</label><br>
-        <textarea name="reason" placeholder="Enter your reason..." required></textarea>
-        <br><br>
-        <button type="submit">Reserve</button>
-    </form>
+            <div class="mb-3">
+                <label for="date_reserved" class="form-label">Date:</label>
+                <input type="date" name="date_reserved" class="form-control" required>
+            </div>
 
-    <p><a href="student_dashboard.php">← Back to Dashboard</a></p>
+            <div class="mb-3">
+                <label for="start_time" class="form-label">Start Time:</label>
+                <input type="time" name="start_time" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="end_time" class="form-label">End Time:</label>
+                <input type="time" name="end_time" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="reason" class="form-label">Reason for Reserve:</label>
+                <textarea name="reason" class="form-control" rows="4" placeholder="Enter your reason..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Reserve</button>
+        </form>
+
+        <div class="mt-3 text-center">
+            <a href="student_rrr.php" class="btn btn-outline-primary">← Back to Meeting Rooms</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

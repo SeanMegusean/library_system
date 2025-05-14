@@ -32,23 +32,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Request Meeting Room</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h2>Fill Up information</h2>
-    <form method="POST">
-        <label for="room_id">Room ID:</label>
-        <span><?= htmlspecialchars($rooms['room_id']) ?></span><br><br>
+    <div class="container mt-5 p-4 rounded shadow-lg" style="background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);">
+        <h2 class="text-center text-primary mb-4">Request Meeting Room</h2>
 
-        <input type="hidden" name="room_id" value="<?= htmlspecialchars($rooms['room_id']) ?>">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="room_id" class="form-label">Room ID:</label>
+                <span class="form-control-plaintext"><?= htmlspecialchars($rooms['room_id']) ?></span>
+                <input type="hidden" name="room_id" value="<?= htmlspecialchars($rooms['room_id']) ?>">
+            </div>
 
-        <label for="reason">Reason for Request:</label><br>
-        <textarea name="reason" required placeholder="Enter the reason for using the room..."></textarea><br><br>
+            <div class="mb-3">
+                <label for="reason" class="form-label">Reason for Request:</label>
+                <textarea class="form-control" name="reason" required placeholder="Enter the reason for using the room..." rows="4"></textarea>
+            </div>
 
-        <button type="submit">Request</button>
-    </form>
-    <p><a href="student_dashboard.php">← Back to Dashboard</a></p>
+            <button type="submit" class="btn btn-outline-success w-100">Submit Request</button>
+        </form>
+
+        <div class="mt-3 text-center">
+            <a href="student_RRR.php" class="btn btn-outline-primary">← Back to Meeting Rooms</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -7,21 +7,35 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     exit;
 }
 
-$student_number = $_SESSION['user_id'];
-$book_id = $_POST['book_id'];
+$student_number = $_SESSION['student_number'];
+$book_id = $_POST['book_id'] ?? null;
 
+if (!$book_id) {
+    header("Location: student_dashboard.php?error=Invalid+book+ID");
+    exit;
+}
 
-// Check if student already borrowed this book and hasn't returned it
+// Check if student already has a pending confirmed borrow
 $check = $conn->prepare("SELECT borrow_ref FROM borrowings WHERE student_number = ? AND book_id = ? AND status = 'Pending'");
-$check->bind_param("ii", $student_number, $book_id);
+$check->bind_param("si", $student_number, $book_id);
 $check->execute();
 $check_result = $check->get_result();
 
 if ($check_result->num_rows > 0) {
-    // Student already borrowed this book and has not returned it
     $existing = $check_result->fetch_assoc();
     $ref = $existing['borrow_ref'];
     header("Location: student_dashboard.php?error=You+already+borrowed+this+book.+Reference:+$ref");
+    exit;
+}
+
+// Check if student already has a pending request in borrowings_temp
+$pendingCheck = $conn->prepare("SELECT * FROM borrowings_temp WHERE student_number = ? AND book_id = ?");
+$pendingCheck->bind_param("si", $student_number, $book_id);
+$pendingCheck->execute();
+$pendingResult = $pendingCheck->get_result();
+
+if ($pendingResult->num_rows > 0) {
+    header("Location: student_dashboard.php?error=You+already+have+a+pending+request+for+this+book");
     exit;
 }
 
@@ -32,33 +46,26 @@ $qty_check->execute();
 $qty_result = $qty_check->get_result();
 $book = $qty_result->fetch_assoc();
 
-if ($book['quantity'] <= 0) {
-    // If the book quantity is zero or less, prevent borrowing
+if (!$book || $book['quantity'] <= 0) {
     header("Location: student_dashboard.php?error=Book+is+out+of+stock");
     exit;
 }
 
-// Generate a unique reference for the borrow
+// Generate borrow reference
 $borrow_ref = strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
 $borrow_date = date('Y-m-d H:i:s');
 
-// Insert borrow request
+// Insert into borrowings_temp instead of borrowings
 $stmt = $conn->prepare("
-  INSERT INTO borrowings
-    (student_number, book_id, borrow_ref, borrow_date, status)
-  VALUES (?, ?, ?, ?, 'Pending')
+    INSERT INTO borrowings_temp
+        (student_number, book_id, borrow_ref, borrow_date, status)
+    VALUES (?, ?, ?, ?, 'Pending')
 ");
-$stmt->bind_param("siss", $_SESSION['student_number'], $book_id, $borrow_ref, $borrow_date);
-
+$stmt->bind_param("siss", $student_number, $book_id, $borrow_ref, $borrow_date);
 
 if ($stmt->execute()) {
-    // After borrowing, reduce the book quantity
-    $update_qty = $conn->prepare("UPDATE books SET quantity = quantity - 1 WHERE id = ?");
-    $update_qty->bind_param("i", $book_id);
-    $update_qty->execute();
-
-    header("Location: student_dashboard.php?message=Book+borrowed+successfully.+Reference:+$borrow_ref");
+    header("Location: student_dashboard.php?message=Your+borrow+request+is+pending+approval.+Reference:+$borrow_ref");
 } else {
-    header("Location: student_dashboard.php?error=Failed+to+borrow+book");
+    header("Location: student_dashboard.php?error=Failed+to+submit+borrow+request");
 }
 ?>

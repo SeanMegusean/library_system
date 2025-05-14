@@ -21,30 +21,40 @@ $reservation = $result->fetch_assoc();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approved Ticket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Reservation for Room ID: <?php echo htmlspecialchars($room_id); ?></h1>
-    <h3>By Student No. <?php echo htmlspecialchars($studentno); ?></h3>
+    <div class="container mt-5 p-4 rounded shadow" style="background-color: #f8f9fa;">
+        <h1 class="text-center text-primary">Reservation Ticket</h1>
+        <h5 class="text-center text-muted mb-4">Room ID: <?= htmlspecialchars($room_id) ?> | Student No: <?= htmlspecialchars($studentno) ?></h5>
 
-    <?php if ($reservation): ?>
-        <p>
-            <strong>Date Reserved:</strong> <?= htmlspecialchars($reservation['date_reserved']) ?><br>
-            <strong>Time:</strong> <?= htmlspecialchars($reservation['start_time']) ?> - <?= htmlspecialchars($reservation['end_time']) ?><br>
-            <strong>Reason:</strong> <?= htmlspecialchars($reservation['reason']) ?><br>
-            <strong>Date of Reservation:</strong> <?= htmlspecialchars($reservation['date_of_reservation']) ?><br>
-            <h2>Status: <?= htmlspecialchars($reservation['status']) ?></h2>
-        </p>
-        <form action="cancel_reserv.php" method="POST">
-        <input type="hidden" name="res_id" value="<?= htmlspecialchars($reservation['res_id']) ?>">
-            <button type="submit">Cancel Reservation</button>
-        </form>
-    <?php else: ?>
-        <p>No approved reservation found.</p>
-    <?php endif; ?>
+        <?php if ($reservation): ?>
+            <div class="card">
+                <div class="card-body">
+                    <p><strong>Date Reserved:</strong> <?= htmlspecialchars($reservation['date_reserved']) ?></p>
+                    <p><strong>Time:</strong> <?= htmlspecialchars($reservation['start_time']) ?> - <?= htmlspecialchars($reservation['end_time']) ?></p>
+                    <p><strong>Reason:</strong> <?= htmlspecialchars($reservation['reason']) ?></p>
+                    <p><strong>Date of Reservation:</strong> <?= htmlspecialchars($reservation['date_of_reservation']) ?></p>
+                    <h4 class="text-success">Status: <?= htmlspecialchars($reservation['status']) ?></h4>
+                    <form action="cancel_reserv.php" method="POST" class="mt-3">
+                        <input type="hidden" name="res_id" value="<?= htmlspecialchars($reservation['res_id']) ?>">
+                        <button type="submit" class="btn btn-danger w-100">Cancel Reservation</button>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-warning text-center">
+                No approved reservation found.
+            </div>
+        <?php endif; ?>
 
-    <br>
-    <a href="student_RRR.php"><-- Back</a>
+        <div class="mt-4 text-center">
+            <a href="student_RRR.php" class="btn btn-outline-primary">← Back to Meeting Rooms</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
