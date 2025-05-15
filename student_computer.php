@@ -62,11 +62,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['request_computer'])) {
                 $stmt->execute();
                 $stmt->close();
 
-                $log_stmt = $conn->prepare("INSERT INTO comp_logs (student_number, status, timestamp, campus) VALUES (?, ?, ?, ?)");
-                $log_stmt->bind_param("ssss", $student_number, $status, $date_requested, $campus);
-                $log_stmt->execute();
-                $log_stmt->close();
-
                 $conn->commit();
                 $success = "Request submitted successfully.";
             } catch (Exception $e) {

@@ -51,12 +51,15 @@ $order_clause = "ORDER BY {$sort_by} {$sort_order}";
             <div class="mb-3 d-flex flex-wrap gap-2">
                 <a class="btn btn-primary" href="admin_books.php">📚 Manage Books</a>
                 <a class="btn btn-info" href="admin_mr_status.php">Meeting Room Status</a>
+                <a class="btn btn-secondary" href="admin_manage_compReq.php">Manage Computer Requests</a>
                 <a class="btn btn-secondary" href="admin_manage_requests.php">Manage Room Requests</a>
                 <a class="btn btn-secondary" href="admin_manage_reservations.php">Manage Room Reservations</a>
                 <a class="btn btn-info" href="mr_logs.php">Meeting Room Logs</a>
+                <a class="btn btn-info" href="cr_logs.php">Computer Requests Logs</a>
                 <a class="btn btn-danger" href="logout.php">Logout</a>
-            <a href="admin_ebooks.php" class="btn btn-outline-secondary">Manage E-Books</a>
+                
             </div>
+            <a href="admin_ebooks.php" class="btn btn-outline-secondary">Manage E-Books</a>
 
             <form method="GET" action="admin_dashboard.php" class="row g-2 mb-3">
                 <div class="col-md-4">
