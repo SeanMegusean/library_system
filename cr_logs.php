@@ -32,7 +32,6 @@ $result = $stmt->get_result();
                     <tr>
                         <th scope="col">Req. Log ID</th>
                         <th scope="col">Request ID</th>
-                        <th scope="col">Student Number</th>
                         <th scope="col">Action</th>
                         <th scope="col">Admin</th>
                         <th scope="col">campus</th>
@@ -45,7 +44,6 @@ $result = $stmt->get_result();
                             <tr>
                                 <td><?= htmlspecialchars($row['log_id']) ?></td>
                                 <td><?= htmlspecialchars($row['req_id']) ?></td>
-                                <td><?= htmlspecialchars($row['student_number']) ?></td>
                                 <td><?= htmlspecialchars($row['action']) ?></td>
                                 <td><?= htmlspecialchars($row['admin_id']) ?></td>
                                 <td><?= htmlspecialchars($row['campus']) ?></td>
