@@ -20,6 +20,7 @@ $student = $fullNameResult->fetch_assoc();
 $full_name = $student['full_name'] ?? $student_number;
 $fullNameStmt->close();
 
+
 // Get the last borrowed book for this student
 $stmt = $conn->prepare("
   SELECT book_id
@@ -75,6 +76,13 @@ body {
         <?php if (isset($_GET['message'])) : ?>
             <div class="message success"><?php echo $_GET['message']; ?></div>
         <?php endif; ?>
+        
+        <?php
+        if (isset($_SESSION['ebook_message'])) {
+            echo $_SESSION['ebook_message'];
+            unset($_SESSION['ebook_message']);
+        }
+        ?>
 
         <?php if (isset($_GET['error'])) : ?>
             <div class="message error"><?php echo $_GET['error']; ?></div>
@@ -149,7 +157,6 @@ body {
         <ul class="list-group">
         <?php foreach ($recommendations as $rec): ?>
             <?php
-                // Check quantity of this recommended book
                 $bookId = $rec['book_id'];
                 $qtyStmt = $conn->prepare("SELECT quantity FROM books WHERE id = ?");
                 $qtyStmt->bind_param("i", $bookId);
@@ -159,8 +166,7 @@ body {
                 $qtyStmt->close();
             ?>
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <?php echo htmlspecialchars($rec['title']); ?>
-                &mdash;
+                <?php echo htmlspecialchars($rec['title']); ?> &mdash;
                 <?php if ($quantity > 0): ?>
                     <form method="POST" action="borrow.php" style="display:inline;" onsubmit="return confirm('Are you sure you want to borrow this book?');">
                         <input type="hidden" name="book_id" value="<?php echo $bookId; ?>">
@@ -171,23 +177,40 @@ body {
                 <?php endif; ?>
             </li> 
         <?php endforeach; ?>
-
         </ul>
     </div>
-        
-    <?php elseif (!$last): ?>
-    <div class="container mt-4">
-        <p class="text-center text-muted">No recommendations yet—try borrowing more books in different categories!</p>
-    </div>
-        
     <?php endif; ?>
-    
+
+    <div class="container mt-4 p-4 rounded shadow-lg" style="background: linear-gradient(90deg, #FFFFFF 0%, #E4E1E1 100%);">
+        <h2 class="text-primary">📘 E-Books Available</h2>
+        <table class="table table-bordered">
+            <thead><tr><th>Title</th><th>Author</th><th>Category</th><th>Action</th></tr></thead>
+            <tbody>
+            <?php
+            $ebookQuery = $conn->query("SELECT * FROM ebooks WHERE available = 1");
+            while ($ebook = $ebookQuery->fetch_assoc()):
+            ?>
+                <tr>
+                    <td><?= htmlspecialchars($ebook['title']) ?></td>
+                    <td><?= htmlspecialchars($ebook['author']) ?></td>
+                    <td><?= htmlspecialchars($ebook['category']) ?></td>
+                    <td>
+                        <form method="POST" action="borrow_ebook.php">
+                            <input type="hidden" name="ebook_id" value="<?= $ebook['id'] ?>">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">Borrow</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
 <?php
-// Close the prepared statement and connection after all operations
 $stmt->close();
 $conn->close();
 ?>

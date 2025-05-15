@@ -55,7 +55,9 @@ $order_clause = "ORDER BY {$sort_by} {$sort_order}";
                 <a class="btn btn-secondary" href="admin_manage_reservations.php">Manage Room Reservations</a>
                 <a class="btn btn-info" href="mr_logs.php">Meeting Room Logs</a>
                 <a class="btn btn-danger" href="logout.php">Logout</a>
+                
             </div>
+            <a href="admin_ebooks.php" class="btn btn-outline-secondary">Manage E-Books</a>
 
             <form method="GET" action="admin_dashboard.php" class="row g-2 mb-3">
                 <div class="col-md-4">

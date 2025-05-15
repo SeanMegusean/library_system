@@ -17,6 +17,12 @@ if ($result->num_rows === 1) {
         $_SESSION['student_number'] = $user['student_number'];
         $_SESSION['role'] = $user['role'];
 
+         if ($user['role'] === 'admin') {
+                $_SESSION['is_admin'] = true;
+            } else {
+                $_SESSION['is_admin'] = false;
+            }
+
         if ($user['role'] === 'admin') {
             header("Location: admin_dashboard.php");
         } else {
