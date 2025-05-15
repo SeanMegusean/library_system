@@ -7,120 +7,66 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 include('db_connection.php');
 
-// Handle export
-if (isset($_GET['export'])) {
-    // Set headers for Excel download
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment; filename="meeting_room_logs.xls"');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-    
-    // Clean output buffer
-    if (ob_get_length()) ob_clean();
-    flush();
-    
-    // Start HTML output for Excel
-    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">';
-    echo '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>';
-    echo '<body>';
-    
-    // Request Logs
-    echo '<table border="1">';
-    echo '<tr><th colspan="6">Request Logs</th></tr>';
-    echo '<tr>
-            <th>Request Log ID</th>
-            <th>Request ID</th>
-            <th>Room ID</th>
-            <th>Action</th>
-            <th>Admin</th>
-            <th>Timestamp</th>
-          </tr>';
-    
-    $sql = "
-        SELECT rl.*, u.student_number AS admin_number, r.room_id
-        FROM request_logs rl
-        JOIN mr_requests mr ON rl.req_id = mr.req_id
-        JOIN users u ON rl.admin_id = u.id
-        JOIN meeting_rooms r ON mr.room_id = r.room_id
-        ORDER BY rl.timestamp DESC
-    ";
-    
-    $reqresult = $conn->query($sql);
-    
-    while ($rqlog = $reqresult->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . $rqlog['log_id'] . '</td>';
-        echo '<td>' . $rqlog['req_id'] . '</td>';
-        echo '<td>' . $rqlog['room_id'] . '</td>';
-        echo '<td>' . $rqlog['action'] . '</td>';
-        echo '<td>' . $rqlog['admin_number'] . '</td>';
-        echo '<td>' . $rqlog['timestamp'] . '</td>';
-        echo '</tr>';
-    }
-    
-    echo '</table>';
-    
-    // Reservation Logs
-    echo '<br><table border="1">';
-    echo '<tr><th colspan="6">Reservation Logs</th></tr>';
-    echo '<tr>
-            <th>Reservation Log ID</th>
-            <th>Reservation ID</th>
-            <th>Room ID</th>
-            <th>Action</th>
-            <th>Admin</th>
-            <th>Timestamp</th>
-          </tr>';
-    
-    $sql = "
-        SELECT rl.*, u.student_number AS admin_number, r.room_id
-        FROM reserve_logs rl
-        JOIN mr_reservations mr ON rl.res_id = mr.res_id
-        JOIN users u ON rl.admin_id = u.id
-        JOIN meeting_rooms r ON mr.room_id = r.room_id
-        ORDER BY rl.timestamp DESC
-    ";
-    
-    $resresult = $conn->query($sql);
-    
-    while ($rslog = $resresult->fetch_assoc()) {
-        echo '<tr>';
-        echo '<td>' . $rslog['log_id'] . '</td>';
-        echo '<td>' . $rslog['res_id'] . '</td>';
-        echo '<td>' . $rslog['room_id'] . '</td>';
-        echo '<td>' . $rslog['action'] . '</td>';
-        echo '<td>' . $rslog['admin_number'] . '</td>';
-        echo '<td>' . $rslog['timestamp'] . '</td>';
-        echo '</tr>';
-    }
-    
-    echo '</table>';
-    echo '</body></html>';
-    exit;
-}
+// Get filter parameters
+$filterDate = $_GET['date'] ?? null;
+$logType = $_GET['log_type'] ?? 'all'; // Can be 'all', 'request', or 'reserve'
 
-// Get logs for display
-$sql = "
+// Query for request logs
+$reqSql = "
     SELECT rl.*, u.student_number AS admin_number, r.room_id
     FROM request_logs rl
     JOIN mr_requests mr ON rl.req_id = mr.req_id
     JOIN users u ON rl.admin_id = u.id
     JOIN meeting_rooms r ON mr.room_id = r.room_id
-    ORDER BY rl.timestamp DESC
 ";
 
-$reqresult = $conn->query($sql);
+// Apply date filter if provided for request logs
+if ($filterDate) {
+    $reqSql .= " WHERE DATE(rl.timestamp) = '$filterDate'";
+}
 
-$sql = "
+$reqSql .= " ORDER BY rl.timestamp DESC";
+$reqResult = $conn->query($reqSql);
+
+// Query for reservation logs
+$resSql = "
     SELECT rl.*, u.student_number AS admin_number, r.room_id
     FROM reserve_logs rl
     JOIN mr_reservations mr ON rl.res_id = mr.res_id
     JOIN users u ON rl.admin_id = u.id
     JOIN meeting_rooms r ON mr.room_id = r.room_id
-    ORDER BY rl.timestamp DESC
 ";
 
-$resresult = $conn->query($sql);
+// Apply date filter if provided for reservation logs
+if ($filterDate) {
+    $resSql .= " WHERE DATE(rl.timestamp) = '$filterDate'";
+}
+
+$resSql .= " ORDER BY rl.timestamp DESC";
+$resResult = $conn->query($resSql);
+
+// The existing borrowings query seems unrelated to meeting room logs, keeping for reference
+$today = date('Y-m-d');
+$borrowFilterDate = $_GET['date'] ?? null;
+
+$query = "
+    SELECT b.campus, b.title, b.category, u.student_number, br.borrow_ref, br.borrow_date, br.status
+    FROM borrowings br
+    JOIN books b ON br.book_id = b.id
+    JOIN users u ON br.student_number = u.student_number
+";
+
+if ($borrowFilterDate) {
+    $query .= " WHERE DATE(br.borrow_date) = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $borrowFilterDate);
+} else {
+    $query .= " ORDER BY br.borrow_date DESC";
+    $stmt = $conn->prepare($query);
+}
+
+$stmt->execute();
+$borrowResult = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -128,22 +74,49 @@ $resresult = $conn->query($sql);
 <head>
     <title>Meeting Room Logs</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body class="bg-light">
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3">🗂️ Meeting Room Logs</h1>
-            <div>
-                <a href="?export=1" class="btn btn-success me-2">
-                    <i class="bi bi-file-excel"></i> Export to Excel
-                </a>
-                <a href="admin_dashboard.php" class="btn btn-primary">← Back to Dashboard</a>
+            <a href="admin_dashboard.php" class="btn btn-success">← Back to Dashboard</a>
+        </div>
+        
+        <!-- Enhanced Filter Form -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <form method="get">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <label for="date" class="form-label mb-0 me-2">Filter by Date:</label>
+                                <input type="date" id="date" name="date" class="form-control" value="<?= htmlspecialchars($filterDate ?? ''); ?>">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <label for="log_type" class="form-label mb-0 me-2">Log Type:</label>
+                                <select name="log_type" id="log_type" class="form-select">
+                                    <option value="all" <?= ($logType === 'all') ? 'selected' : ''; ?>>All Logs</option>
+                                    <option value="request" <?= ($logType === 'request') ? 'selected' : ''; ?>>Request Logs</option>
+                                    <option value="reserve" <?= ($logType === 'reserve') ? 'selected' : ''; ?>>Reservation Logs</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                                <a href="mr_logs.php" class="btn btn-outline-secondary">Clear</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
-
-        <div class="table-responsive shadow-sm rounded bg-white p-3 mb-4">
-            <h4>Request Logs</h4>
+        
+        <div class="table-responsive shadow-sm rounded bg-white p-3">
+            <?php if ($logType === 'all' || $logType === 'request'): ?>
+            <h4 class="mb-3">Request Logs</h4>
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -156,22 +129,28 @@ $resresult = $conn->query($sql);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($rqlog = $reqresult->fetch_assoc()) : ?>
+                    <?php if ($reqResult && $reqResult->num_rows > 0): ?>
+                        <?php while ($rqlog = $reqResult->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($rqlog['log_id']) ?></td>
+                                <td><?= htmlspecialchars($rqlog['req_id']) ?></td>
+                                <td><?= htmlspecialchars($rqlog['room_id']) ?></td>
+                                <td><?= htmlspecialchars($rqlog['action']) ?></td>
+                                <td><?= htmlspecialchars($rqlog['admin_number']) ?></td>
+                                <td><?= htmlspecialchars($rqlog['timestamp']) ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
                         <tr>
-                            <td><?= $rqlog['log_id'] ?></td>
-                            <td><?= $rqlog['req_id'] ?></td>
-                            <td><?= $rqlog['room_id'] ?></td>
-                            <td><?= $rqlog['action'] ?></td>
-                            <td><?= $rqlog['admin_number'] ?></td>
-                            <td><?= $rqlog['timestamp'] ?></td>
+                            <td colspan="6" class="text-center">No request logs found for the selected criteria.</td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
-        </div>
-        
-        <div class="table-responsive shadow-sm rounded bg-white p-3">
-            <h4>Reservation Logs</h4>
+            <?php endif; ?>
+            
+            <?php if ($logType === 'all' || $logType === 'reserve'): ?>
+            <h4 class="mb-3 mt-4">Reservation Logs</h4>
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -184,19 +163,28 @@ $resresult = $conn->query($sql);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($rslog = $resresult->fetch_assoc()) : ?>
+                    <?php if ($resResult && $resResult->num_rows > 0): ?>
+                        <?php while ($rslog = $resResult->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($rslog['log_id']) ?></td>
+                                <td><?= htmlspecialchars($rslog['res_id']) ?></td>
+                                <td><?= htmlspecialchars($rslog['room_id']) ?></td>
+                                <td><?= htmlspecialchars($rslog['action']) ?></td>
+                                <td><?= htmlspecialchars($rslog['admin_number']) ?></td>
+                                <td><?= htmlspecialchars($rslog['timestamp']) ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
                         <tr>
-                            <td><?= $rslog['log_id'] ?></td>
-                            <td><?= $rslog['res_id'] ?></td>
-                            <td><?= $rslog['room_id'] ?></td>
-                            <td><?= $rslog['action'] ?></td>
-                            <td><?= $rslog['admin_number'] ?></td>
-                            <td><?= $rslog['timestamp'] ?></td>
+                            <td colspan="6" class="text-center">No reservation logs found for the selected criteria.</td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
+            <?php endif; ?>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
