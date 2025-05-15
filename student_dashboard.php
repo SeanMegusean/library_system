@@ -99,7 +99,10 @@ body {
             </div>
         </form>
 
-        <p><a href="student_RRR.php" class="btn btn-outline-primary border-2" style="font-weight: 600;">Request/Reserve a Meeting Room?</a></p>
+         <div style="display: flex; gap: 10px;">
+  <p style="margin: 0;"><a href="student_RRR.php" class="btn btn-outline-primary border-2" style="font-weight: 600;">Request/Reserve a Meeting Room?</a></p>
+  <p style="margin: 0;"><a href="student_computer.php" class="btn btn-outline-primary border-2" style="font-weight: 600;">Request a Computer Device?</a></p>
+</div>
         <h2>Available Books</h2>
         <table class="table table-striped table-bordered table-hover">
             <thead class="text-primary text-center">
